@@ -3202,7 +3202,7 @@ sublist_([_|Rest],Sub):-
 
 
 muta(Y,Y).
-muta(X,Y) :-string_chars(X,Xlist),
+muta(X,Y) :- string_chars(X,Xlist),
             sublen(Xlist,Sub1,3),
             w4(Atom_),Atom_\=X,string_chars(Atom_,Atom),
             sublen(Atom,Sub2,3),
