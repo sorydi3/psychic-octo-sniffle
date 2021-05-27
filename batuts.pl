@@ -48,14 +48,16 @@ member_(X,[Y|YS]):-member_(X,YS).
 elFa(B,E):-establiment(B,_,L),member_(batut(E,_,_),L).
 
 /**
- * 
+ * Es satisfa si l'establiment E te un ratio d'empleat per batut R
  **/
-ratio(E,R):-true.
+ratio(E,R):- true.
 
 /**
  * 
  **/
-promig(E,P):-true.
+suma([],0).
+suma([batut(_,_,L)|LS],M):-suma(LS,Z),M is Z+L.
+promig(E,P):-establiment(E,_,L),length(L,Len),suma(L,M),M=P.
 
 /**
  * 
@@ -68,10 +70,10 @@ mesbarat(E):-true.
 trobaBatuts(L,D,I):-true. 
 
 
-try :- member(batuts(combo2,_,_),[ 
+try(X):-suma([ 
     batut(combo1, [strawberry, orange, banana], 2),
     batut(combo2, [banana, orange], 5),
     batut(combo3, [orange, peach, banana], 2),
     batut(combo4, [guava, mango, papaya, orange],1),
     batut(combo5, [grapefruit, banana, pear],1) 
-]).
+],X).
