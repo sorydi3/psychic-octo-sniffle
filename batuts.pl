@@ -30,11 +30,11 @@ establiment(
 
 
 /**
- * @parameters N -> Nom de l'establiment
- * @parametere E -> Nombre de batuts
- * es satisfa si l’establiment E te m´es de N batuts.
+ * @parameters N -> Nombre de batuts
+ * @parametere E -> Nom de l'establiment
+ * Es satisfà si l’establiment E te més de N batuts.
  **/
-mesDe(N,E):- establiment(N,_,L),length(L, Len),Len>E.
+mesDe(N,E):- establiment(E, _, L), length(L, Len), Len > N.
 
 /**
  * N -> Nom de l'establiment
