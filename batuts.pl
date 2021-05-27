@@ -29,10 +29,49 @@ establiment(
 ).
 
 
+/**
+ * @parameters N -> Nom de l'establiment
+ * @parametere E -> Nombre de batuts
+ * es satisfa si l’establiment E te m´es de N batuts.
+ **/
+mesDe(N,E):- establiment(N,_,L),length(L, Len),Len>E.
 
-mesDe(N,E):-true.
-elFa(B,E):-true.
+/**
+ * N -> Nom de l'establiment
+ * B -> Nom del batut
+ * Es satisfa si l'establiment B fa el batut E
+ **/
+
+member_(X,[X|XS]).
+member_(X,[Y|YS]):-member_(X,YS).
+
+elFa(B,E):-establiment(B,_,L),member_(batut(E,_,_),L).
+
+/**
+ * 
+ **/
 ratio(E,R):-true.
+
+/**
+ * 
+ **/
 promig(E,P):-true.
+
+/**
+ * 
+ **/
 mesbarat(E):-true.
+
+/**
+ * 
+ **/
 trobaBatuts(L,D,I):-true. 
+
+
+try :- member(batuts(combo2,_,_),[ 
+    batut(combo1, [strawberry, orange, banana], 2),
+    batut(combo2, [banana, orange], 5),
+    batut(combo3, [orange, peach, banana], 2),
+    batut(combo4, [guava, mango, papaya, orange],1),
+    batut(combo5, [grapefruit, banana, pear],1) 
+]).
