@@ -51,7 +51,7 @@ elFa(B,E):-establiment(B,_,L),member_(batut(E,_,_),L).
  * Es satisfa si l'establiment E te un ratio d'empleat per batut R
  **/
 ratio(E,R):- true.
-
+ %  I don't understand th question
 /**
  * 
  **/
@@ -74,7 +74,10 @@ mesbarat(E).
 /**
  * 
  **/
-trobaBatuts(L,D,I):-true. 
+memList([],D).
+memList([L|LX],D):-memList(LX,D),member(L,D),!,fail.
+%working on it
+%trobaBatuts([X,Y|L],D,I):-establiment(E,In,Lb),
 
 
 try(X):-suma([ 

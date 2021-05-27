@@ -3208,3 +3208,6 @@ muta(X,Y) :- string_chars(X,Xlist),
             sublen(Atom,Sub2,3),
             sublist_(Sub1,Sub2), 
             (Atom_ = Y,write(Atom_),nl;write(Atom_),nl,muta(Atom_,Y)).
+
+
+
