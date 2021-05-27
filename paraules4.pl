@@ -3185,5 +3185,26 @@ w4("zoos").
 w4("zori").
 w4("zorn").
 w4("zulu").
-
 list(X):- w4(X),write(X),nl,fail.
+
+%--------------------------
+%diff(X,Z)
+sublen(X,Y,L):-sublist_(X,Y),length(Y, Len),Len=L.
+
+
+sublist_([],[]).
+
+sublist_([First|Rest],[First|Sub]):-
+    sublist_(Rest,Sub).
+
+sublist_([_|Rest],Sub):-
+    sublist_(Rest,Sub).
+
+
+muta(Y,Y).
+muta(X,Y) :-string_chars(X,Xlist),
+            sublen(Xlist,Sub1,3),
+            w4(Atom_),Atom_\=X,string_chars(Atom_,Atom),
+            sublen(Atom,Sub2,3),
+            sublist_(Sub1,Sub2), 
+            (Atom_ = Y,write(Atom_),nl;write(Atom_),nl,muta(Atom_,Y)).
