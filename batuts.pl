@@ -57,12 +57,19 @@ ratio(E,R):- true.
  **/
 suma([],0).
 suma([batut(_,_,L)|LS],M):-suma(LS,Z),M is Z+L.
-promig(E,P):-establiment(E,_,L),length(L,Len),suma(L,M),M=P.
+promig(E,P):-establiment(E,_,L),length(L,Len),suma(L,M),Z is M/Len,Z=P.
+
 
 /**
- * 
+ * Es satisfa si l'establiment  E Te els batuts mes barats en promitge.
  **/
-mesbarat(E):-true.
+pro(E,X):- establiment(E,_,L),length(L,Len),suma(L,M),X is M/Len.
+mesbarat(E):-establiment(E,_,L),
+            suma(L,Sum),length(L,Len),Pro is Sum/Len,
+            establiment(X,_,LX),X \= E,
+            suma(LX,SumX),length(LX,LenX),ProX is SumX/LenX,
+            ProX<Pro,!,write("found one that is lesser: "),write(ProX),nl,write("than: "),write(Pro),fail.
+mesbarat(E).
 
 /**
  * 
