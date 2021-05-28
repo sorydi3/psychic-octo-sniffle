@@ -76,8 +76,14 @@ mesbarat(E).
  **/
 memList([],D).
 memList([L|LX],D):-memList(LX,D),member(L,D),!,fail.
+
+allmemList([],D).
+allmemList([L|LX],D):-memList(LX,D),member(L,D).
 %working on it
-%trobaBatuts([X,Y|L],D,I):-establiment(E,In,Lb),
+fillList(_,[],_,_,[]).
+fillList(E,[batut(M,List,_)|Lb],D,I,[E,M|L]):-fillList(_,Lb,D,I,L),memList(List,I),allmemList(List,D).
+
+trobaBatuts([Z|L],D,I):-establiment(E,In,Lb),fillList(E,Lb,D,I,Z),fail.
 
 
 try(X):-suma([ 
