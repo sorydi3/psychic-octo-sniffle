@@ -50,7 +50,7 @@ establiment( % -> Promig 3.0
     ]
 ).
 
-
+establiment(end,_,_).
 /**
  * N -> Nombre de batuts
  * E -> Nom de l'establiment
@@ -94,21 +94,20 @@ mesBarat(E). % Si provant tots els altres establiment no s'ha complert l'anterio
  * 
  **/
 memList([],D).
-memList([L|LX],D):-memList(LX,D),member(L,D),!,fail.
+memList([L|LX],D):-memList(LX,D),not(member(L,D)).
 
 allmemList([],D).
-allmemList([L|LX],D):-memList(LX,D),member(L,D).
+allmemList([L|LX],D):-allmemList(LX,D),member(L,D).
 %working on it
 fillList(_,[],_,_,[]).
-fillList(E,[batut(M,List,_)|Lb],D,I,[E,M|L]):-fillList(_,Lb,D,I,L),memList(List,I),allmemList(List,D).
+fillList(E,[batut(M,List,_)|Lb],D,I,[E,M|L]):-fillList(E,Lb,D,I,L),memList(List,I),allmemList(D,List),!.
+fillList(E,[batut(M,List,_)|Lb],D,I,L):-fillList(E,Lb,D,I,L).
 
-trobaBatuts([Z|L],D,I):-establiment(E,In,Lb),fillList(E,Lb,D,I,Z),fail.
+trobaBatuts([Z|L],D,I).
+trobaBatuts(L,D,I):- repeat, 
+                    establiment(E,In,Lb),
+                    fillList(E,Lb,D,I,Z),
+                    not(member(Z,L)),!,write(Z),
+                    establiment(end,_,_)\= E.    
 
-
-try(X):-suma([ 
-    batut(combo1, [strawberry, orange, banana], 2),
-    batut(combo2, [banana, orange], 5),
-    batut(combo3, [orange, peach, banana], 2),
-    batut(combo4, [guava, mango, papaya, orange],1),
-    batut(combo5, [grapefruit, banana, pear],1) 
-],X).
+%trobaBatuts(L,D,I):- batuts([],D,I).
