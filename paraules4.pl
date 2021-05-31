@@ -3188,26 +3188,26 @@ w4("zulu").
 list(X):- w4(X),write(X),nl,fail.
 
 %--------------------------
-%diff(X,Z)
+%Retorna subllistes que tenen mida 3
 sublen(X,Y,L):-sublist_(X,Y),length(Y, Len),Len=L.
 
+comon3([],_,0).
+comon3(L,L,Len):-length(L,Len).
+comon3([A|L1],[A|L2],N):-comon3(L1,L2,X),N is X+1.
+comon3([A|L1],[B|L2],N):- comon3(L1,L2,N).
 
 sublist_([],[]).
-
-sublist_([First|Rest],[First|Sub]):-
-    sublist_(Rest,Sub).
-
-sublist_([_|Rest],Sub):-
-    sublist_(Rest,Sub).
+sublist_([First|Rest],[First|Sub]):- sublist_(Rest,Sub).
+sublist_([_|Rest],Sub):- sublist_(Rest,Sub).
 
 
-muta(Y,Y).
-muta(X,Y) :- string_chars(X,Xlist),
+muta_(Y,Y,_).
+muta_(X,Y,L) :- write(X),nl,string_chars(X,Xlist),
             sublen(Xlist,Sub1,3),
-            w4(Atom_),Atom_\=X,string_chars(Atom_,Atom),
+            w4(Atom_),not(member(Atom_,L)),string_chars(Atom_,Atom),
             sublen(Atom,Sub2,3),
             sublist_(Sub1,Sub2), 
-            (Atom_ = Y,write(Atom_),nl;write(Atom_),nl,muta(Atom_,Y)).
+            (Atom_ = Y,write(Atom_),nl; muta_(Atom_,Y,[Atom_|L]) ).
 
 
-
+muta(X,Y):- muta_(X,Y,[X]).
