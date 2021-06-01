@@ -82,10 +82,10 @@ elFa(B,E):- establiment(E,_,L), member(batut(B,_,_),L). % S'hauria de fer un tal
 /**
  * Es satisfa si l'establiment E te un ratio d'empleat per batut R
  **/
-ratio(E,R):- true.
- %  I don't understand th question
+ratio(E,R):- establiment(E, Empleats, Batuts), length(Empleats, LEmp), length(Batuts, LBat), R is LEmp/LBat.
 
- %=============================================================
+
+%=============================================================
 %                        promig(E,N).
 %=============================================================
 
