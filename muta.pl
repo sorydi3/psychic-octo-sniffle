@@ -3197,34 +3197,9 @@ diferencia([X|XS], [Y|YS], N):- X \== Y, diferencia(XS, YS, Np), N is Np+1, !.
 % muta(PI, PF):- string_chars(PI, CPI), w4(X), string_chars(X, CX), diferencia(CPI, CX, N), N =:= 1, write(X), muta(X, PF).
 
 
-muta(PI, PF):- string_chars(PI, CPI), string_chars(PF, CPF), diferencia(CPI, CPF, N), i_muta(PI, PF, [], N, 100).
+muta(PI, PF):- string_chars(PI, CPI), string_chars(PF, CPF), diferencia(CPI, CPF, N), i_muta(PI, PF, [], N, LF).
+% fmuta(PI, PF):- string_chars(PI, CPI), string_chars(PF, CPF), diferencia(CPI, CPF, Dif), findall(LF, i_muta(PI, PF, [], Dif, LF), Llistes), write(LF).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% CERCA A LO LOCO
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% i_muta(PI, _, LP, Niv):- writeln(["primer", Niv, " "]),
-%                          member(PI, LP), 
-%                          write(PI), write(" esta a la llista "), write(LP),
-%                          fail.
-
-% i_muta(PI, PF, LP, Niv):- writeln(["tercer", Niv, " "]), 
-%                           string_chars(PI, CPI),
-%                           string_chars(PF, CPF), 
-%                           diferencia(CPI, CPF, N), 
-%                           N =:= 0, 
-%                           write("Trobat "), write(LP), !.
-
-% i_muta(PI, PF, LP, Niv):- writeln(["segon", Niv, " "]), 
-%                           string_chars(PI, CPI), 
-%                           w4(X),
-%                           not(member(X, LP)),
-%                           string_chars(X, CX), 
-%                           diferencia(CPI, CX, N), 
-%                           N =:= 1, 
-%                           write(X), nl,
-%                           append([PI], LP, L), 
-%                           Nivp is Niv+1, 
-%                           i_muta(X, PF, L, Nivp).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CERCA ASSEGURANT QUE CADA COP S'APROPA MES A LA PARAULA FINAL
@@ -3237,8 +3212,8 @@ i_muta(PI, PF, LP, _):- string_chars(PI, CPI),
                      string_chars(PF, CPF), 
                      diferencia(CPI, CPF, N), 
                      N =:= 0, 
-                     reverse([PF|LP], LlistaFinal), length(LlistaFinal, Llarg),
-                     write("Canvis: "), writeln(LlistaFinal), write("Llargada: "), writeln(Llarg).
+                     reverse([PF|LP], LF), length(LF, Llarg),
+                     write("Canvis: "), writeln(LF), write("Llargada: "), writeln(Llarg).
 
 i_muta(PI, PF, LP, LastDif):- string_chars(PI, CPI), 
                               w4(X),
@@ -3249,8 +3224,6 @@ i_muta(PI, PF, LP, LastDif):- string_chars(PI, CPI),
                               string_chars(PF, CPF),
                               diferencia(CX, CPF, Np), 
                               Np < LastDif, % Assegures que la diferencia entre la nova paraula i la final sigui mes petita
-                              write("Segon1: "),
-                              writeln([LastDif, Np, X]),
                               append([PI], LP, L), 
                               i_muta(X, PF, L, Np).
 
@@ -3263,8 +3236,6 @@ i_muta(PI, PF, LP, LastDif):- string_chars(PI, CPI),
                               string_chars(PF, CPF),
                               diferencia(CX, CPF, Np),
                               LastDif =:= Np, % Si no ha aconseguit fer-la mes petita, llavors ho fem amb una que la diferencia sigui igual
-                              write("Segon2: "),
-                              writeln([LastDif, Np, X]),
                               append([PI], LP, L), 
                               i_muta(X, PF, L, Np).
 
