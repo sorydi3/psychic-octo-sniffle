@@ -1,3 +1,4 @@
+
 :-dynamic board/1.
 :-retractall(board(_)).
 :-assertz(board([
@@ -17,9 +18,11 @@
 
 %----------------------------------------------------------------------------------
 
-display_game(Position,Player):-true.
 
 
+display_game(L1):-board(Board),length(Board,N),!,between(1,6,In),I is N-In,findall(A,(between(1,N,I),nth1(I,Board,Row),nth1(J,Row,A)),L1).
+
+%----------------------------------------------------------------------------------------%
 game_over(Position,Player,Result):-true.
 
 
@@ -54,12 +57,12 @@ move([X,Y|_],Board,Result,opponent):-
 next_player(opponent,computer).
 next_player(computer,opponent).
 
-play(Game):-display_game(Position,Player),play(Board,opponent,Result).
+play(Game):-display_game(Position),play(Board,opponent,Result).
 
 play(Board,Player,Result):- game_over(Board,Player,Result),!,announce(Result).
 
 play(Position,Player,Result) :- choose_move(Posicion,Player,Move),
-                                move(Move,Posicion,Posicion1),
+                                move(Move,Posicion,Posicion1,Player),
                                 display_game(Posicion1,Player),
                                 next_player(Player,Player1),!,
                                 play(Posicion1,Player1,Result).
@@ -95,8 +98,11 @@ replace_row_col(M,Row,Col,Cell,N) :-
 
 
 display([]).
-display([X|L]):- displist([X]),nl,display(L).
+display([I|L]):- display(L),dispList(I),nl.
 
 
-displist([]).
-dispList([X|L]):-write(X),write(" "),dispList(L).
+dispList([]).
+dispList([X|L]):-write(X),write(" "),dispList(L).   
+
+
+
