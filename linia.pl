@@ -12,64 +12,88 @@
             /*G*/ ['_','_','_','_','_','_']   %G
 
                 ])).
+:- dynamic announce/1.
 
 
 
 
-%----------------------------------------------------------------------------------
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% DISPLAY THE BOARD %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+display_game():-board(Board),write("   A  B  C  D  E  F  G"),nl,display(Board,6).
+display(Grid,N) :-
+    maplist(nth1(N),Grid, Column),          
+  	write(N),disp(Column),nl,fail.
+display_game.
+
+display(Grid,N) :-
+    N > 0,
+    N1 is N-1,
+    display(Grid,N1).
+
+disp([]).
+disp([X|L]):-write("  "),write(X),disp(L),nl,fail.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%% CHECK IF THE GAME IS OVER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+game_over(Board,opponent,Result):-checkHori(Board,'X',7);checkVert(Board,'X',6);checkdiagonals('X',Board),!.
+game_over(Board,computer,Result):-checkHori(Board,'O',7);checkVert(Board,'O',6);checkdiagonals('O',Board),!.
 
 
 
-display_game(L1):-board(Board),length(Board,N),!,between(1,6,In),I is N-In,findall(A,(between(1,N,I),nth1(I,Board,Row),nth1(J,Row,A)),L1).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CHOOSE MOVE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%----------------------------------------------------------------------------------------%
-game_over(Position,Player,Result):-true.
-
-
-announce(Result):-true.
-%findFirstEmpty([],_,_,-1). 
 findFirstEmpty([E|_],E,Index,Index).
 findFirstEmpty([X|List],Ele,Index,Z):- K is Index+1 ,findFirstEmpty(List,Ele,K,N),Z=N,!.
- 
-/** CHECK WETHER A MOVE MADE BY THE PLAYER IS LEGAL OR NOT **/
-legal(Board,Y,X):- member(Y,['A','B','C','D','E','F','G']),
-            indexOf(['A','B','C','D','E','F','G'],Y,Z),
+
+legal(Board,E,X,Y):- write("withing legal -->"),write(E),member(E,['A','B','C','D','E','F','G']),
+            indexOf(['A','B','C','D','E','F','G'],E,T), X is T+1,
             nth1(X, Board, Row),
-            findFirstEmpty(Row,'_',0,Z).
+            findFirstEmpty(Row,'_',1,Y),!.
 
 
-%===========================================================================
-choose_move(Board,opponent,Move):- nl,repeat,
-                                    writeln("Please make a move! A To G"),
-                                    read(Y),
-                                    legal(Board,Y,X),Move=[X,Y|[]].
 
-choose_move(Position,computer,Move):- true. %ORDINADOR
+choose_move(opponent,Move):-board(Board),write("Tria: "),!, repeat,
+                            get_char(E),E \='\n',!,write("here!"),
+                            legal(Board,E,X,Y),write("legal"),Move=[X,Y|[]],!.
+
+choose_move(computer,Move):- true. %ORDINADOR
 
 %==========================================================================
 
-move([X,Y|_],Board,Result,opponent):-
+move([X,Y|_],opponent):-board(Board),
                 replace_row_col(Board,X,Y,'X',Result),
                 assertz(board(Result)),
                 retract(board(Board)).
 
-/* CHOOSE THE NEXT PLAYER */    
-next_player(opponent,computer).
+move([X,Y|_],computer):-board(Board),
+    replace_row_col(Board,X,Y,'O',Result),
+    assertz(board(Result)),
+    retract(board(Board)).
+
+%%%%%%%%%%%%%%%%%%%%%%%% CHOOSE THE NEXT PLAYER %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+next_player(opponent,opponent).
 next_player(computer,opponent).
 
-play(Game):-display_game(Position),play(Board,opponent,Result).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% MAIN %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-play(Board,Player,Result):- game_over(Board,Player,Result),!,announce(Result).
+init(Result):-play(opponent),board(Result).
 
-play(Position,Player,Result) :- choose_move(Posicion,Player,Move),
-                                move(Move,Posicion,Posicion1,Player),
-                                display_game(Posicion1,Player),
+%play(Player):- board(Board),game_over(Board,Player,Result),!,announce(Result).
+
+play(Player) :- choose_move(Player,Move),
+                                move(Move,Player),
+                                display_game(),
                                 next_player(Player,Player1),!,
-                                play(Posicion1,Player1,Result).
+                                play(Player1).
                                 
 
 
-%---------------------------------------------HELPERS METHODS---------------------------------
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%     HELPER METHODS    %%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 indexOf([Element|_], Element, 0):- !.
 indexOf([_|Tail], Element, Index):-
@@ -77,6 +101,9 @@ indexOf([_|Tail], Element, Index):-
   !,
   Index is Index1+1.
 
+sublist( [], _ ).
+sublist( [X|XS], [X|XSS] ) :- sublist( XS, XSS ).
+sublist( [X|XS], [_|XSS] ) :- sublist( [X|XS], XSS ).
 
 %
 % replace a single cell in a list-of-lists
@@ -97,12 +124,38 @@ replace_row_col(M,Row,Col,Cell,N) :-
     replace_nth(Row,M,Upd,N).
 
 
-display([]).
-display([I|L]):- display(L),dispList(I),nl.
+checkHori(Grid, J, N) :-
+maplist(nth1(N),Grid, Column),          
+sublist([J,J,J,J], Column),!.
 
 
-dispList([]).
-dispList([X|L]):-write(X),write(" "),dispList(L).   
+checkHori(Grid, J, N) :-
+N > 0,
+N1 is N-1,
+checkHori(Grid, J, N1),!.
+
+
+checkVert(Grid, J, N) :-
+nth1(N,Grid,L)
+,          
+sublist([J,J,J,J], L),
+!.
+
+
+checkVert(Grid, J, N) :-
+N > 0,
+N1 is N-1,
+checkVert(Grid, J, N1),!.
+
+
+checkdiagonals(X,T):- append(_,[C1,C2,C3,C4|_],T), % check if 4 connected columns exists in board...
+       append(I1,[X|_],C1), %...such that all of them contain a piece of player X...
+       append(I2,[X|_],C2),
+       append(I3,[X|_],C3),
+       append(I4,[X|_],C4),
+       length(I1,M1), length(I2,M2), length(I3,M3), length(I4,M4),
+       M2 is M1-1, M3 is M2-1, M4 is M3-1,!.
+
 
 
 
