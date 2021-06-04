@@ -1,7 +1,8 @@
-
+:- set_prolog_flag(answer_write_options,[max_depth(0)]).
 :-dynamic board/1.
 :-retractall(board(_)).
 :-dynamic moves/1.
+:-retractall(moves(_)).
 :-assertz(moves([])). 
 :-assertz(board([
                 %   6   5   4   3   2   1 
@@ -24,7 +25,7 @@
 display_game():-board(Board),write("   A  B  C  D  E  F  G"),nl,display(Board,6).
 display(Grid,N) :-
     maplist(nth1(N),Grid, Column),          
-  	write(N),disp(Column),nl,fail.
+    write(N),disp(Column),nl,fail.
 display_game.
 
 display(Grid,N) :-
@@ -44,7 +45,7 @@ game_over(Board,computer,Result):-checkHori(Board,'O',7);checkVert(Board,'O',6);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CHOOSE MOVE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-findFirstEmpty([E|_],E,Index,Index).
+findFirstEmpty([E|_],E,Index,Index):-!.
 findFirstEmpty([X|List],Ele,Index,Z):- K is Index+1 ,findFirstEmpty(List,Ele,K,N),Z=N,!.
 
 legal(Board,E,X,Y):-member(E,['A','B','C','D','E','F','G']),
@@ -59,7 +60,8 @@ choose_move(opponent,Move):-board(Board),repeat,write("tria A to G:"),
                             legal(Board,E,X,Y),Move=[X,Y|[]],!.
 
 
-possibles_moves(List):- board(Board),between(1,6,I), nth1(I,Board,Row),
+possibles_moves(_):- assertz(moves([])),
+                     board(Board),between(1,6,I), nth1(I,Board,Row),
                      findFirstEmpty(Row,'_',1,Index), 
                      moves(Moves), retract(moves(_)),
                      append([[I,Index]],Moves,List), 
@@ -67,9 +69,18 @@ possibles_moves(List):- board(Board),between(1,6,I), nth1(I,Board,Row),
 
 possibles_moves(L):- moves(L).
 
-choose_move(computer,Move):- true. % FOR WIN
-choose_move(computer,Move):- true. % FOR BLOCK OPPONENT TO WIN
-choose_move(computer,Move):- true. % FOR WIN
+choose_move(computer,Move):- possibles_moves(Moves),winingMove(Moves,Move,computer),!,write("wining move!").
+choose_move(computer,Move):- possibles_moves(Moves),winingMove(Moves,Move,opponent),!,write("blocking opponent winning move!"). % FOR BLOCK OPPONENT TO WIN
+choose_move(computer,Move):- possibles_moves(Moves),nth1(1,Moves,Move),!,write("playing random!").
+
+winingMove([],_,_).
+winingMove([WiningMove|Moves],WiningMove,Player):-winingMove(Moves,Z,Player),
+                                    board(Board),
+                                    fakeMove(WiningMove,Player,Result),
+                                    game_over(Result,Player,_),!.
+
+fakeMove([X,Y|_],computer,Result):-board(Board),replace_row_col(Board,X,Y,'O',Result),!.
+fakeMove([X,Y|_],opponent,Result):-board(Board),replace_row_col(Board,X,Y,'X',Result),!.
 
 %==========================================================================
 
@@ -87,8 +98,8 @@ move([X,Y|_],computer):-board(Board),
 
 %%%%%%%%%%%%%%%%%%%%%%%% CHOOSE THE NEXT PLAYER %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-next_player(opponent,opponent).
-next_player(computer,opponent).
+next_player(opponent,computer). %computer turn
+next_player(computer,opponent). %player turn
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% MAIN %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
