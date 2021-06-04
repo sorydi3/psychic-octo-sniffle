@@ -1,6 +1,8 @@
 
 :-dynamic board/1.
 :-retractall(board(_)).
+:-dynamic moves/1.
+:-assertz(moves([])). 
 :-assertz(board([
                 %   6   5   4   3   2   1 
             /*A*/ ['_','_','_','_','_','_'],  %A
@@ -56,7 +58,18 @@ choose_move(opponent,Move):-board(Board),repeat,write("tria A to G:"),
                             get_char(E),
                             legal(Board,E,X,Y),Move=[X,Y|[]],!.
 
-choose_move(computer,Move):- true. %ORDINADOR
+
+possibles_moves(List):- board(Board),between(1,6,I), nth1(I,Board,Row),
+                     findFirstEmpty(Row,'_',1,Index), 
+                     moves(Moves), retract(moves(_)),
+                     append([[I,Index]],Moves,List), 
+                     assertz(moves(List)),fail.
+
+possibles_moves(L):- moves(L).
+
+choose_move(computer,Move):- true. % FOR WIN
+choose_move(computer,Move):- true. % FOR BLOCK OPPONENT TO WIN
+choose_move(computer,Move):- true. % FOR WIN
 
 %==========================================================================
 
@@ -70,6 +83,8 @@ move([X,Y|_],computer):-board(Board),
     assertz(board(Result)),
     retract(board(Board)).
 
+
+
 %%%%%%%%%%%%%%%%%%%%%%%% CHOOSE THE NEXT PLAYER %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 next_player(opponent,opponent).
@@ -77,13 +92,13 @@ next_player(computer,opponent).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% MAIN %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-init(Result):-play(opponent),board(Result).
+init(Result):-display_game,play(opponent),board(Result).
 
-%play(Player):- board(Board),game_over(Board,Player,Result),!,announce(Result).
+play(Player):- board(Board),game_over(Board,Player,Result),!,write("GAME OVER!").
 
 play(Player) :- choose_move(Player,Move),
                                 move(Move,Player),
-                                display_game(),
+                                display_game,
                                 next_player(Player,Player1),!,
                                 play(Player1).
                                 
@@ -125,27 +140,26 @@ replace_row_col(M,Row,Col,Cell,N) :-
 
 
 checkHori(Grid, J, N) :-
-maplist(nth1(N),Grid, Column),          
-sublist([J,J,J,J], Column),!.
+            maplist(nth1(N),Grid, Column),          
+            sublist([J,J,J,J], Column),!.   
 
 
 checkHori(Grid, J, N) :-
-N > 0,
-N1 is N-1,
-checkHori(Grid, J, N1),!.
+                        N > 0,
+                        N1 is N-1,
+                        checkHori(Grid, J, N1),!.
 
 
 checkVert(Grid, J, N) :-
-nth1(N,Grid,L)
-,          
-sublist([J,J,J,J], L),
-!.
+            nth1(N,Grid,L),          
+            sublist([J,J,J,J], L),
+            !.
 
 
 checkVert(Grid, J, N) :-
-N > 0,
-N1 is N-1,
-checkVert(Grid, J, N1),!.
+            N > 0,
+            N1 is N-1,
+            checkVert(Grid, J, N1),!.
 
 
 checkdiagonals(X,T):- append(_,[C1,C2,C3,C4|_],T), % check if 4 connected columns exists in board...
@@ -155,6 +169,7 @@ checkdiagonals(X,T):- append(_,[C1,C2,C3,C4|_],T), % check if 4 connected column
        append(I4,[X|_],C4),
        length(I1,M1), length(I2,M2), length(I3,M3), length(I4,M4),
        M2 is M1-1, M3 is M2-1, M4 is M3-1,!.
+
 
 
 
