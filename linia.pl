@@ -45,16 +45,16 @@ game_over(Board,computer,Result):-checkHori(Board,'O',7);checkVert(Board,'O',6);
 findFirstEmpty([E|_],E,Index,Index).
 findFirstEmpty([X|List],Ele,Index,Z):- K is Index+1 ,findFirstEmpty(List,Ele,K,N),Z=N,!.
 
-legal(Board,E,X,Y):- write("withing legal -->"),write(E),member(E,['A','B','C','D','E','F','G']),
+legal(Board,E,X,Y):-member(E,['A','B','C','D','E','F','G']),
             indexOf(['A','B','C','D','E','F','G'],E,T), X is T+1,
             nth1(X, Board, Row),
             findFirstEmpty(Row,'_',1,Y),!.
 
 
 
-choose_move(opponent,Move):-board(Board),write("Tria: "),!, repeat,
-                            get_char(E),E \='\n',!,write("here!"),
-                            legal(Board,E,X,Y),write("legal"),Move=[X,Y|[]],!.
+choose_move(opponent,Move):-board(Board),repeat,write("tria A to G:"),
+                            get_char(E),
+                            legal(Board,E,X,Y),Move=[X,Y|[]],!.
 
 choose_move(computer,Move):- true. %ORDINADOR
 
