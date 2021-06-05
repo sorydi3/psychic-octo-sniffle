@@ -4,13 +4,16 @@
 :-dynamic moves/1.
 :-retractall(moves(_)).
 :-assertz(moves([])). 
+:-dynamic move/1.
+:-retractall(move(_)).
+:-assertz(move([])). 
 :-assertz(board([
                 %   6   5   4   3   2   1 
-            /*A*/ ['_','_','_','_','_','_'],  %A
-            /*B*/ ['_','_','_','_','_','_'],  %B
-            /*C*/ ['_','_','_','_','_','_'],  %C 
-            /*D*/ ['_','_','_','_','_','_'],  %D
-            /*E*/ ['_','_','_','_','_','_'],  %E
+            /*A*/ ['X','X','X','_','_','_'],  %A
+            /*B*/ ['X','X','_','_','_','_'],  %B
+            /*C*/ ['O','X','O','_','_','_'],  %C 
+            /*D*/ ['X','O','_','_','_','_'],  %D
+            /*E*/ ['X','_','_','_','_','_'],  %E
             /*F*/ ['_','_','_','_','_','_'],  %F
             /*G*/ ['_','_','_','_','_','_']   %G
 
@@ -61,7 +64,7 @@ choose_move(opponent,Move):-board(Board),repeat,write("tria A to G:"),
 
 
 possibles_moves(_):- assertz(moves([])),
-                     board(Board),between(1,6,I), nth1(I,Board,Row),
+                     board(Board),between(1,7,I), nth1(I,Board,Row),
                      findFirstEmpty(Row,'_',1,Index), 
                      moves(Moves), retract(moves(_)),
                      append([[I,Index]],Moves,List), 
@@ -69,15 +72,21 @@ possibles_moves(_):- assertz(moves([])),
 
 possibles_moves(L):- moves(L).
 
-choose_move(computer,Move):- possibles_moves(Moves),winingMove(Moves,Move,computer),!,write("wining move!").
-choose_move(computer,Move):- possibles_moves(Moves),winingMove(Moves,Move,opponent),!,write("blocking opponent winning move!"). % FOR BLOCK OPPONENT TO WIN
-choose_move(computer,Move):- possibles_moves(Moves),nth1(1,Moves,Move),!,write("playing random!").
+choose_move(computer,Move):- possibles_moves(Moves),not(winingMove(Moves,Move,computer)),!,write("wining move!").
+choose_move(computer,Move):- possibles_moves(Moves),not(winingMove(Moves,Move,opponent)),write("DETECTED OPPONENT WINNING MOVE"),nl,!,write("blocking opponent winning move!"). % FOR BLOCK OPPONENT TO WIN
+choose_move(computer,Move):- possibles_moves(Moves),random_between(1,7,I),nth1(I,Moves,Move),!,write("playing random!"),nl.
 
-winingMove([],_,_).
-winingMove([WiningMove|Moves],WiningMove,Player):-winingMove(Moves,Z,Player),
-                                    board(Board),
-                                    fakeMove(WiningMove,Player,Result),
-                                    game_over(Result,Player,_),!.
+winingMove([],Move,Player):-!,fail.
+winingMove([WiningMove|Moves],Move,Player):-
+                                fakeMove(WiningMove,Player,Result),
+                                ((game_over(Result,Player,_),Move=WiningMove) ; winingMove(Moves,Move,Player)),!.
+/**
+ * winingMove(Moves,WiningMove,Player), 
+board(Board),
+fakeMove(WiningMove,Player,Result),
+not(game_over(Result,Player,_)),!,write("game is over!").
+
+ * **/
 
 fakeMove([X,Y|_],computer,Result):-board(Board),replace_row_col(Board,X,Y,'O',Result),!.
 fakeMove([X,Y|_],opponent,Result):-board(Board),replace_row_col(Board,X,Y,'X',Result),!.
@@ -152,7 +161,7 @@ replace_row_col(M,Row,Col,Cell,N) :-
 
 checkHori(Grid, J, N) :-
             maplist(nth1(N),Grid, Column),          
-            sublist([J,J,J,J], Column),!.   
+            sublist(Column,[J,J,J,J]),!.   
 
 
 checkHori(Grid, J, N) :-
@@ -180,6 +189,9 @@ checkdiagonals(X,T):- append(_,[C1,C2,C3,C4|_],T), % check if 4 connected column
        append(I4,[X|_],C4),
        length(I1,M1), length(I2,M2), length(I3,M3), length(I4,M4),
        M2 is M1-1, M3 is M2-1, M4 is M3-1,!.
+
+
+
 
 
 
