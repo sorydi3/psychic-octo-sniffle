@@ -9,7 +9,7 @@
 :-assertz(move([])). 
 :-assertz(board([
                 %   6   5   4   3   2   1 
-            /*A*/ ['X','X','X','_','_','_'],  %A
+            /*A*/ ['X','X','_','_','_','_'],  %A
             /*B*/ ['X','X','_','_','_','_'],  %B
             /*C*/ ['O','X','O','_','_','_'],  %C 
             /*D*/ ['X','O','_','_','_','_'],  %D
@@ -72,14 +72,16 @@ possibles_moves(_):- assertz(moves([])),
 
 possibles_moves(L):- moves(L).
 
-choose_move(computer,Move):- possibles_moves(Moves),not(winingMove(Moves,Move,computer)),!,write("wining move!").
-choose_move(computer,Move):- possibles_moves(Moves),not(winingMove(Moves,Move,opponent)),write("DETECTED OPPONENT WINNING MOVE"),nl,!,write("blocking opponent winning move!"). % FOR BLOCK OPPONENT TO WIN
+choose_move(computer,Move):- possibles_moves(Moves),winingMove(Moves,Move,computer),!,write("wining move!").
+choose_move(computer,Move):- possibles_moves(Moves),winingMove(Moves,Move,opponent),write("DETECTED OPPONENT WINNING MOVE"),nl,!,write("blocking opponent winning move!"). % FOR BLOCK OPPONENT TO WIN
 choose_move(computer,Move):- possibles_moves(Moves),random_between(1,7,I),nth1(I,Moves,Move),!,write("playing random!"),nl.
 
 winingMove([],Move,Player):-!,fail.
 winingMove([WiningMove|Moves],Move,Player):-
                                 fakeMove(WiningMove,Player,Result),
                                 ((game_over(Result,Player,_),Move=WiningMove) ; winingMove(Moves,Move,Player)),!.
+
+
 /**
  * winingMove(Moves,WiningMove,Player), 
 board(Board),
@@ -98,7 +100,7 @@ move([X,Y|_],opponent):-board(Board),
                 assertz(board(Result)),
                 retract(board(Board)).
 
-move([X,Y|_],computer):-board(Board),
+move([X,Y|_],computer):-board(Board),write((X,Y)),
     replace_row_col(Board,X,Y,'O',Result),
     assertz(board(Result)),
     retract(board(Board)).
@@ -110,13 +112,20 @@ move([X,Y|_],computer):-board(Board),
 next_player(opponent,computer). %computer turn
 next_player(computer,opponent). %player turn
 
+
+announceResult(opponent):- write("YOU WON THE GAME!"),nl.
+announceResult(computer):- write("THE COMPUTER WON THE GAME!"),nl.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% MAIN %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
 init(Result):-display_game,play(opponent),board(Result).
 
-play(Player):- board(Board),game_over(Board,Player,Result),!,write("GAME OVER!").
+play(Player):- board(Board),
+                next_player(Player,AntPlayer),
+                (game_over(Board,Player,Result);game_over(Board,AntPlayer,Result)),!,
+                announceResult(AntPlayer).
 
-play(Player) :- choose_move(Player,Move),
+play(Player) :-choose_move(Player,Move),
                                 move(Move,Player),
                                 display_game,
                                 next_player(Player,Player1),!,
