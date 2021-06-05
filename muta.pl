@@ -3187,46 +3187,43 @@ w4("zorn").
 w4("zulu").
 
 
-% Calcula diferencia entre dos llistes, presuposa que les dos llistes son del mateix tamany
+% diferencia(X, Y, N). Es compleix quan N és el nombre d’elements diferents entre X i Y. 
+% Pressuposa que les dues llistes tenen la mateixa mida.
 diferencia([], [], 0).
 diferencia([X|XS], [Y|YS], N):- X == Y, diferencia(XS, YS, N), !.
 diferencia([X|XS], [Y|YS], N):- X \== Y, diferencia(XS, YS, Np), N is Np+1, !.
 
 
-% muta(PI, PF):- string_chars(PI, CPI), string_chars(PF, CPF), diferencia(CPI, CPF, N), N =:= 0, write("Trobat").
-% muta(PI, PF):- string_chars(PI, CPI), w4(X), string_chars(X, CX), diferencia(CPI, CX, N), N =:= 1, write(X), muta(X, PF).
+muta(PI, PF):- string_chars(PI, CPI), string_chars(PF, CPF), diferencia(CPI, CPF, N), i_muta(PI, PF, [], N).
 
-
-muta(PI, PF):- string_chars(PI, CPI), string_chars(PF, CPF), diferencia(CPI, CPF, N), i_muta(PI, PF, [], N, LF).
-% fmuta(PI, PF):- string_chars(PI, CPI), string_chars(PF, CPF), diferencia(CPI, CPF, Dif), findall(LF, i_muta(PI, PF, [], Dif, LF), Llistes), write(LF).
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% CERCA ASSEGURANT QUE CADA COP S'APROPA MES A LA PARAULA FINAL
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% S'HAN DE TROBAR EL MINIM DE MUTACIONS, NO QUALSEVOL ORDRE SERVEIX
-
-% Es va mirant quants caracters diferents hi ha entre la paraula inicial/nova i la paraula final
-
+% i_muta(PI, PF, LP, LastDif). Es compleix quan PI és la paraula inicial de la mutació, PF la paraula final de la 
+% mutació, LP és la llista de paraules per les que ja s’ha passat i LastDif és la última diferència entre PI i PF
 i_muta(PI, PF, LP, _):- string_chars(PI, CPI),
-                     string_chars(PF, CPF), 
-                     diferencia(CPI, CPF, N), 
-                     N =:= 0, 
-                     reverse([PF|LP], LF), length(LF, Llarg),
-                     write("Canvis: "), writeln(LF), write("Llargada: "), writeln(Llarg).
+                        string_chars(PF, CPF), 
+                        diferencia(CPI, CPF, N), 
+                        N =:= 0, 
+                        reverse([PF|LP], LF), length(LF, Llarg),
+                        write("Canvis: "), writeln(LF), write("Llargada: "), writeln(Llarg).
 
+% Es pot considerar com un “if” amb la condició de que la nova paraula tingui diferència 1 i la diferència amb la paraula 
+% final sigui més petita (ens apropem a ella)
 i_muta(PI, PF, LP, LastDif):- string_chars(PI, CPI), 
                               w4(X),
-                              not(member(X, LP)),
-                              string_chars(X, CX), 
-                              diferencia(CPI, CX, N), 
+                              not(member(X, LP)), % Assegurar que la nova paraula triada no forma part de la llista de
+                              string_chars(X, CX), % paraules per la que s’ha passat, sinó segurament s’entraria en un
+                              diferencia(CPI, CX, N), % bucle entre dues paraules
                               N =:= 1, 
                               string_chars(PF, CPF),
                               diferencia(CX, CPF, Np), 
-                              Np < LastDif, % Assegures que la diferencia entre la nova paraula i la final sigui mes petita
-                              append([PI], LP, L), 
-                              i_muta(X, PF, L, Np).
+                              Np < LastDif, % Assegurar que la diferencia entre la nova paraula i la final és mes petita
+                              append([PI], LP, L), % Es dona la paraula com a bona i s’afegeix a la llista
+                              i_muta(X, PF, L, Np). % Finalment es torna a cridar al predicat amb la paraula acceptada 
+                                                    % com a la nova paraula inicial, la mateixa paraula final, la nova
+                                                    % llista i la nova diferència entre paraules
 
+
+% Es pot considerar com un “if” amb la condició de que la nova paraula tingui diferència 1 i la diferència amb la paraula
+% final sigui igual a l’anterior paraula, el predicat és idèntic a l’anterior excepte LastDif =:= Np
 i_muta(PI, PF, LP, LastDif):- string_chars(PI, CPI), 
                               w4(X),
                               not(member(X, LP)),
@@ -3239,69 +3236,89 @@ i_muta(PI, PF, LP, LastDif):- string_chars(PI, CPI),
                               append([PI], LP, L), 
                               i_muta(X, PF, L, Np).
 
-% MEH
-% i_muta(PI, PF, LP, LastDif):- string_chars(PI, CPI), 
-%                               w4(X),
-%                               not(member(X, LP)),
-%                               string_chars(X, CX), 
-%                               diferencia(CPI, CX, N), 
-%                               N =:= 1, 
-%                               string_chars(PF, CPF),
-%                               diferencia(CX, CPF, Np),
-%                               LastDif =:= Np,
-%                               write("Tercer: "),
-%                               writeln([LastDif, Np, X]),
-%                               append([PI], LP, L), 
-%                               i_muta(X, PF, L, Np).
+
+% mesCurta(X, LlCurta). Es compleix quan X és una llista de llistes i LlCurta és la llista més curta de X
+mesCurta([X], X).
+mesCurta([X,Y|XS], LlCurta):- length(X, LX), length(Y, LY), LX =< LY, mesCurta([X|XS], LlCurta).
+mesCurta([X,Y|XS], LlCurta):- length(X, LX), length(Y, LY), LY < LX, mesCurta([Y|XS], LlCurta).
+
+fmuta(PI, PF):- string_chars(PI, CPI), 
+                string_chars(PF, CPF), 
+                diferencia(CPI, CPF, Dif), 
+                trobaUn(PI, PF, [], Dif, LFTmp), % Es troba la primera solució
+                length(LFTmp, MaxLlarg), % I es fa servir la llargada per la resta de possibles llistes
+                findall(LF, trobaMesCurt(PI, PF, [], Dif, MaxLlarg-1, LF), Llistes), 
+                mesCurta([LFTmp|Llistes], MC), write(MC).
+
+% trobaUn(PI, PF, LP, LastDif, LF). Es compleix quan PI és la paraula inicial de la mutació, PF la paraula final de la 
+% mutació, LP és la llista de paraules per les que ja s’ha passat, LastDif és la última diferència entre PI i PF i LF és
+% la llista final trobada.
+trobaUn(PI, PF, LP, _, LF):- string_chars(PI, CPI),
+                             string_chars(PF, CPF), 
+                             diferencia(CPI, CPF, N), 
+                             N =:= 0, 
+                             reverse([PF|LP], LF), !.
+
+trobaUn(PI, PF, LP, LastDif, LF):- string_chars(PI, CPI), 
+                                   w4(X),
+                                   not(member(X, LP)),
+                                   string_chars(X, CX), 
+                                   diferencia(CPI, CX, N), 
+                                   N =:= 1, 
+                                   string_chars(PF, CPF),
+                                   diferencia(CX, CPF, Np), 
+                                   Np < LastDif, % Assegures que la diferencia entre la nova paraula i la final sigui mes petita
+                                   append([PI], LP, L), 
+                                   trobaUn(X, PF, L, Np, LF).
+
+trobaUn(PI, PF, LP, LastDif, LF):- string_chars(PI, CPI), 
+                                   w4(X),
+                                   not(member(X, LP)),
+                                   string_chars(X, CX), 
+                                   diferencia(CPI, CX, N), 
+                                   N =:= 1, 
+                                   string_chars(PF, CPF),
+                                   diferencia(CX, CPF, Np),
+                                   LastDif =:= Np, 
+                                   append([PI], LP, L), 
+                                   trobaUn(X, PF, L, Np, LF).
+
+% trobaMesCurt(PI, PF, LP, LastDif, MaxLlarg LF). Es compleix quan PI és la paraula inicial de la mutació, PF la paraula 
+% final de la mutació, LP és la llista de paraules per les que ja s’ha passat, LastDif és la última diferència entre PI i 
+% PF, MaxLlarg és la màxima llargada que pot tenir la llista i LF és la llista final trobada.
+trobaMesCurt(PI, PF, LP, _, MaxLlarg, LF):- string_chars(PI, CPI),
+                            string_chars(PF, CPF), 
+                            diferencia(CPI, CPF, N), 
+                            N =:= 0,
+                            length(LP, Len),
+                            Len < MaxLlarg, % Assegurar que la nova llista és més petita que el màxim
+                            reverse([PF|LP], LF).
+
+trobaMesCurt(PI, PF, LP, LastDif, MaxLlarg, LF):- string_chars(PI, CPI), 
+                                                  w4(X),
+                                                  not(member(X, LP)),
+                                                  string_chars(X, CX), 
+                                                  diferencia(CPI, CX, N), 
+                                                  N =:= 1, 
+                                                  string_chars(PF, CPF),
+                                                  diferencia(CX, CPF, Np), 
+                                                  Np < LastDif, % Assegures que la diferencia entre la nova paraula i la final sigui mes petita
+                                                  length(LP, Len),
+                                                  Len < MaxLlarg, % Assegurar que la nova llista és més petita que el màxim
+                                                  append([PI], LP, L), 
+                                                  trobaMesCurt(X, PF, L, Np, MaxLlarg, LF).
 
 
-
-
-
-% AFEGINT MAX LLARG la teoria es que MaxLlarg hauria d'assegurar que no es trobin solucions mes llargues
-% a la que s'ha trobat en un moment donat, p.e. si es troba una solució amb 11 passos, descartar totes les que
-% hi hagi mes de 11 passos, pero no se com posar-ho pq funcioni
-
-% i_muta(PI, PF, LP, _, MaxLlarg):- string_chars(PI, CPI),
-%                      string_chars(PF, CPF), 
-%                      diferencia(CPI, CPF, N), 
-%                      N =:= 0,
-%                      writeln(["Primer ", MaxLlarg]),
-%                      reverse([PF|LP], LlistaFinal), length(LlistaFinal, Llarg), write(Llarg), MaxLlarg is Llarg+0, write(MaxLlarg),
-%                      write("Canvis: "), writeln(LlistaFinal), write("Llargada: "), writeln(Llarg).
-
-% i_muta(PI, PF, LP, LastDif, MaxLlarg):- string_chars(PI, CPI), 
-%                               w4(X),
-%                               not(member(X, LP)),
-%                               string_chars(X, CX), 
-%                               diferencia(CPI, CX, N), 
-%                               N =:= 1, 
-%                               writeln(["Segon ", MaxLlarg]),
-%                               string_chars(PF, CPF),
-%                               diferencia(CX, CPF, Np), 
-%                               Np < LastDif,
-%                               write("Segon1: "),
-%                               writeln([LastDif, Np, X]),
-%                               length(LP, Llargp),
-%                               Llargp < MaxLlarg,
-%                               append([PI], LP, L), 
-%                               i_muta(X, PF, L, Np, MaxLlarg).
-
-% i_muta(PI, PF, LP, LastDif, MaxLlarg):- string_chars(PI, CPI), 
-%                               w4(X),
-%                               not(member(X, LP)),
-%                               string_chars(X, CX), 
-%                               diferencia(CPI, CX, N), 
-%                               N =:= 1, 
-%                               writeln(["Tercer ", MaxLlarg]),
-%                               string_chars(PF, CPF),
-%                               diferencia(CX, CPF, Np),
-%                               LastDif =:= Np,
-%                               write("Segon2: "),
-%                               writeln([LastDif, Np, X]),
-%                               length(LP, Llargp),
-%                               Llargp < MaxLlarg,
-%                               append([PI], LP, L), 
-%                               i_muta(X, PF, L, Np, MaxLlarg).
-
-
+trobaMesCurt(PI, PF, LP, LastDif, MaxLlarg, LF):- string_chars(PI, CPI), 
+                                                  w4(X),
+                                                  not(member(X, LP)),
+                                                  string_chars(X, CX), 
+                                                  diferencia(CPI, CX, N), 
+                                                  N =:= 1, 
+                                                  string_chars(PF, CPF),
+                                                  diferencia(CX, CPF, Np),
+                                                  LastDif =:= Np, 
+                                                  length(LP, Len),
+                                                  Len < MaxLlarg, % Assegurar que la nova llista és més petita que el màxim
+                                                  append([PI], LP, L), 
+                                                  trobaMesCurt(X, PF, L, Np, MaxLlarg, LF).
