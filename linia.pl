@@ -2,43 +2,32 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% INICIALITSACIO DEL TAULER  %%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+:- set_prolog_flag(answer_write_options,[max_depth(0)]).
 %predicats que es satifan automaticament quan s'inicia el programa.
 :-dynamic board/1. % iniciem un tauler dynamic, que anirem modifican durant el joc. 
 :-retractall(board(_)). % eliminem el tauler si ja existia.
 :-dynamic moves/1. % predicat que anira guardant les possibles jugades del tauler en tot moment.
 :-retractall(moves(_)).
 :-assertz(moves([])). 
-
-:-dynamic move/1.
-:-retractall(move(_)).
-:-assertz(move([])). 
-:-assertz(board([
-                %   6   5   4   3   2   1 
-            /*A*/ ['X','X','_','_','_','_'],  %A
-            /*B*/ ['X','X','_','_','_','_'],  %B
-            /*C*/ ['O','X','O','_','_','_'],  %C 
-            /*D*/ ['X','O','_','_','_','_'],  %D
-            /*E*/ ['X','_','_','_','_','_'],  %E
-            /*F*/ ['_','_','_','_','_','_'],  %F
-            /*G*/ ['X','_','_','_','_','_']   %G
-
-                ])).
-:- dynamic announce/1.
+:-assertz(board([/*A*/ ['X','X','_','_','_','_'], /*B*/ ['X','X','_','_','_','_'], 
+                /*C*/ ['O','X','O','_','_','_'], /*D*/ ['X','O','_','_','_','_'],
+               /*E*/ ['X','_','_','_','_','_'], /*F*/ ['_','_','_','_','_','_'],
+              /*G*/ ['X','_','_','_','_','_'] ])).
 
 /**
  * @Parametres
  * Es satisfa el predicat initBoard() si s'ha creat dinanmicament el tauler mitjançant els methodes
  * retract() per eliminar el tauler ja exitent, i despres amb el predicat < assertz()> crear un de nou buit.
  * **/
+
 initBoard():-retract(board(_)),assertz(board([
-/*A*/ ['_','_','_','_','_','_'],  %A
-/*B*/ ['_','_','_','_','_','_'],  %B
-/*C*/ ['_','_','_','_','_','_'],  %C 
-/*D*/ ['_','_','_','_','_','_'],  %D
-/*E*/ ['_','_','_','_','_','_'],  %E
-/*F*/ ['_','_','_','_','_','_'],  %F
-/*G*/ ['_','_','_','_','_','_']])).%G
+    /*A*/ ['_','_','_','_','_','_'],  %A
+    /*B*/ ['_','_','_','_','_','_'],  %B
+    /*C*/ ['_','_','_','_','_','_'],  %C 
+    /*D*/ ['_','_','_','_','_','_'],  %D
+    /*E*/ ['_','_','_','_','_','_'],  %E
+    /*F*/ ['_','_','_','_','_','_'],  %F
+    /*G*/ ['_','_','_','_','_','_']])).%G
 
 
 
@@ -52,8 +41,7 @@ initBoard():-retract(board(_)),assertz(board([
 *Es satisfa el predicat display_game() si es mostra correctament el tauler per 
 *pantalla amb el format requerit.
 */
-display_game():-board(Board),write("   A  B  C  D  E  F  G  "),nl,display(Board,6).
-
+display_game():-board(Board),write("   A  B  C  D  E  F  G"),nl,display(Board,6).
 display_game.
 
 /**
@@ -62,8 +50,9 @@ display_game.
  * Es satisfa si es mostra totes les columnes del tauler comencent per l'element en la posicio N
  * de cada fila. 
  * **/
+
 display(Grid,N) :-
-    maplist(nth1(N),Grid, Column), %per cada fila del tauler guarda l'element N en la llista Columna.         
+    maplist(nth1(N),Grid, Column), %per cada fila del tauler guarda l'element N en la llista Columna.                   
     write(N),disp(Column),nl,fail.
 
 display(Grid,N) :-
@@ -109,7 +98,7 @@ dispMove(Move,computer):- nth1(1,Move,I),nth1(I,['A','B','C','D','E','F','G'],E)
 game_over(Board,opponent,_):-checkHori(Board,'X',7);checkVert(Board,'X',6);checkdiagonals('X',Board),!.
 game_over(Board,computer,_):-checkHori(Board,'O',7);checkVert(Board,'O',6);checkdiagonals('O',Board),!.
 
-
+%hola
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%% PREDICATS PER ESCOLLIR ELS MOVIMENTS  %%%%%%%%%%%%%%%%%%%%
@@ -123,10 +112,12 @@ game_over(Board,computer,_):-checkHori(Board,'O',7);checkVert(Board,'O',6);check
  * Y -> columna
  * Es satisfa si en la posicio x,y del tauler es una posicio buida. 
  * **/
+
 legal(Board,E,X,Y):-member(E,['A','B','C','D','E','F','G']),
             indexOf(['A','B','C','D','E','F','G'],E,T), X is T+1, %troba l'index de l'element E i guarda el resultat en T
             nth1(X, Board, Row),
-            findFirstEmpty(Row,'_',1,Y),!. %Troba la prima posicio buida de la fila.
+            findFirstEmpty(Row,'_',1,Y),!.  %Troba la prima posicio buida de la fila.
+
 
 
 /**
@@ -166,6 +157,7 @@ choose_move(computer,Move):- possibles_moves(Moves),winingMove(Moves,Move,comput
 choose_move(computer,Move):- possibles_moves(Moves),winingMove(Moves,Move,opponent),!,dispMove(Move,computer). % FOR BLOCK OPPONENT TO WIN
 choose_move(computer,Move):- possibles_moves(Moves),length(Moves,N),random_between(1,N,I),nth1(I,Moves,Move),!,dispMove(Move,computer),nl.
 
+
 /**
  * Moves -> Llista de possibles moviments en el tauler
  * Move -> Variable on unificarem la jugada ganadora per l'ordinador o que bloqueja l'opponent en guanyar.
@@ -176,8 +168,8 @@ choose_move(computer,Move):- possibles_moves(Moves),length(Moves,N),random_betwe
 winingMove([],_,_):-!,fail.
 % simulem una jugada amb un dels moviments de la llista de moviments i seguidament comprobar si es una jugada guanyador 
 % i en cas que ho sigui acabem la cerca i unifiquem la jugada a  Move
-winingMove([WiningMove|Moves],Move,Player):- fakeMove(WiningMove,Player,Result),game_over(Result,Player,_),Move=WiningMove,!.
-winingMove([WiningMove|Moves],Move,Player):- winingMove(Moves,Move,Player),!.
+winingMove([WiningMove|_],Move,Player):- fakeMove(WiningMove,Player,Result),game_over(Result,Player,_),Move=WiningMove,!.
+winingMove([_|Moves],Move,Player):- winingMove(Moves,Move,Player),!.
 
 /**
  * Move -> Juga que volem simular
@@ -188,13 +180,14 @@ winingMove([WiningMove|Moves],Move,Player):- winingMove(Moves,Move,Player),!.
 fakeMove([X,Y|_],computer,Result):-board(Board),replace_row_col(Board,X,Y,'O',Result),!.
 fakeMove([X,Y|_],opponent,Result):-board(Board),replace_row_col(Board,X,Y,'X',Result),!.
 
+
 /**
  * Move -> Move que volem dur a terme en el tauler
  * opponent -> Jugador huma 
  * Es satisfa si s'ha pogut dur a terme el moviment correctament en el tauler
  * **/
 move([X,Y|_],opponent):-board(Board),
-                replace_row_col(Board,X,Y,'X',Result), % posa la peça del jugador huma en la posicio x,y
+                replace_row_col(Board,X,Y,'X',Result),
                 assertz(board(Result)),
                 retract(board(Board)).
 
@@ -232,25 +225,25 @@ next_player(computer,opponent). % torn jugador huma.
  * **/
 init_game(Result):-initBoard,display_game,nl,nl,play(opponent),board(Result).
 
+
 /**
  * Player -> Jugador
  * Es satisfa si s'ha trobat un guanyador o empat.
  * **/
-
  %comprovem si ha hagut un guanyador amb el jugador anterior   
-play(Player):- board(Board),
+ play(Player):- board(Board),
                 next_player(Player,AntPlayer), % jugador anterior
-                game_over(Board,AntPlayer,Result),!, %comprovem si ha acabat la partida
+                game_over(Board,AntPlayer,_),!, %comprovem si ha acabat la partida
                 announceResult(AntPlayer),!. % anunciem el resulat en cas de que hi hagi un guanyador
 % Es satisfa si hi ha un empat
-play(Player):-possibles_moves(Moves),!,length(Moves,Len),!,Len=0,write("TIE!"),!.
+play(Player):-possibles_moves(Moves),length(Moves,Len),Len=0,write("TIE!").
 % Es satisfa en el cas que no hi ha un guanyador ni un empat, llavors la crida recursiva
 % per passar al seguent jugador.
-play(Player) :-choose_move(Player,Move), % escollim un moviment
-                                move(Move,Player), % fem el moviment
-                                display_game,nl,nl, % mostrem per pantalla l'estat del tauler
-                                next_player(Player,Player1),!, % passem el seguent jugador
-                                play(Player1). % crida recursiva.
+play(Player) :- choose_move(Player,Move), % escollim un moviment
+                move(Move,Player), % fem el moviment
+                display_game,nl,nl, % mostrem per pantalla l'estat del tauler
+                next_player(Player,Player1),!, % passem el seguent jugador
+                play(Player1). % crida recursiva.
                                 
 
 
