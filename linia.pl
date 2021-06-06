@@ -98,7 +98,7 @@ dispMove(Move,computer):- nth1(1,Move,I),nth1(I,['A','B','C','D','E','F','G'],E)
 game_over(Board,opponent,_):-checkHori(Board,'X',7);checkVert(Board,'X',6);checkdiagonals('X',Board),!.
 game_over(Board,computer,_):-checkHori(Board,'O',7);checkVert(Board,'O',6);checkdiagonals('O',Board),!.
 
-%hola
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%% PREDICATS PER ESCOLLIR ELS MOVIMENTS  %%%%%%%%%%%%%%%%%%%%
@@ -282,7 +282,7 @@ replace_nth(N,I,V,O) :-
 /**
  * M -> Tauler
  * Row -> Fila
- * Col -> Columna
+ * Col -> Columna   
  * Cell -> Element
  * N -> Tauler final despres de fer la substitucio en la posicio (Fila,Columna) amb l'element
  * Es satisfa si s'ha pogut remplaçar l'element de la posicio Row,Columna amb l'element <Element>
