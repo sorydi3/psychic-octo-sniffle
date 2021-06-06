@@ -86,15 +86,16 @@ promig(E,P):- establiment(E,_,L), length(L,Len), suma(L,M), Z is M/Len, Z = P.
 
 
 % mesBarat(E). Es satisfà si l’establiment E te els batuts més barats en promig
-mesBarat(E):- establiment(E, _, _), promig(E, Pe), establiment(X, _, _), X \= E, promig(X, Px), Pe < Px, !, fail. % A la mínima que n'hi hagi un de mes barat fallar
-mesBarat(E). % Si provant tots els altres establiment no s'ha complert l'anterior, aquesta retornarà true, NO ES POT CANVIAR D'ORDRE
+mesBarat(E):- establiment(E, _, _), promig(E, Pe), establiment(X, _, _), X \= E, promig(X, Px), Pe > Px, !, fail. % A la mínima que n'hi hagi un de mes barat fallar
+mesBarat(E):- establiment(E, _, _). % Si provant tots els altres establiment no s'ha complert l'anterior, aquesta retornarà true, NO ES POT CANVIAR D'ORDRE
+
 
 % notInList(LX, D). Es satisfà quan algun dels elements de la llista LX està a la llista D
-notInList([],D).
+notInList([],_).
 notInList([L|LX],D):- notInList(LX,D), not(member(L,D)). 
 
 % inList(LX, D). Es satisfà quan tots els elemnts de la llista LX estan a la llista D
-inList([],D).
+inList([],_).
 inList([L|LX],D):- inList(LX,D), member(L,D).
 
 % fillList(E, Lb, D, I, L). Es satisfà quan L és una llista formada per parelles (E, NomBatut) que contenen
@@ -102,13 +103,13 @@ inList([L|LX],D):- inList(LX,D), member(L,D).
 % Fa un recorregut de tots els batuts de l'establiment i comprovant si el batut compleix els requisits D i I.
 fillList(_,[],_,_,[]).
 fillList(E,[batut(M,List,_)|Lb],D,I,[E,M|L]):- fillList(E,Lb,D,I,L), notInList(List,I), inList(D,List), !.
-fillList(E,[batut(M,List,_)|Lb],D,I,L):- fillList(E,Lb,D,I,L).
+fillList(E,[batut(_,_,_)|Lb],D,I,L):- fillList(E,Lb,D,I,L).
 
 % recurse(Establiments,L,D,I). Es satisfà quan L és una llista formada per llistes de parells (Establiment, NomBatut)
 % de la llista d'establiments Establiments que contenen els ingredients que es demanan a la llista D
 % i cap dels que es demanen a la llista I
 recurse([],[],_,_).
-recurse([X|Establiments],[Z|L],D,I):- recurse(Establiments,L,D,I), establiment(X,In,Lb), fillList(X,Lb,D,I,Z), writeln(Z).
+recurse([X|Establiments],[Z|L],D,I):- recurse(Establiments,L,D,I), establiment(X,_,Lb), fillList(X,Lb,D,I,Z).
 
 % trobaBatuts(L,D,I). Es satisfà si L és una llista formada pels parells (Establiment,NomBatut) 
 % de tots els establiments-batuts que contenen els ingredients que es demanen a la llista D 
