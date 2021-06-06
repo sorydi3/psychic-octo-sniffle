@@ -10,6 +10,21 @@
 :-retractall(moves(_)).
 :-assertz(moves([])). 
 
+:-dynamic move/1.
+:-retractall(move(_)).
+:-assertz(move([])). 
+:-assertz(board([
+                %   6   5   4   3   2   1 
+            /*A*/ ['X','X','_','_','_','_'],  %A
+            /*B*/ ['X','X','_','_','_','_'],  %B
+            /*C*/ ['O','X','O','_','_','_'],  %C 
+            /*D*/ ['X','O','_','_','_','_'],  %D
+            /*E*/ ['X','_','_','_','_','_'],  %E
+            /*F*/ ['_','_','_','_','_','_'],  %F
+            /*G*/ ['X','_','_','_','_','_']   %G
+
+                ])).
+:- dynamic announce/1.
 
 /**
  * @Parametres
@@ -65,15 +80,16 @@ disp([]).
 disp([X|L]):-write("  "),write(X),disp(L),nl,fail.
 
 /**
- * 
- * 
+ * opponent/computer -> Jugador huma/ ordinador
+ * Es satisfa si s'ha anunciat correctament el resultat.
  * **/
 announceResult(opponent):- write("YOU WON THE GAME!"),nl.
 announceResult(computer):- write("THE COMPUTER WON THE GAME!"),nl.
 
 /**
- * 
- * 
+ * Move -> jugada
+ * opponent/computer -> Jugador huma/ ordinador
+ * Es satisfa si s'ha escrit correctament el movie.
  * **/
 dispMove(Move,opponent):- nth1(1,Move,I),nth1(I,['A','B','C','D','E','F','G'],E),write("tria: "),write(E),nl.
 dispMove(Move,computer):- nth1(1,Move,I),nth1(I,['A','B','C','D','E','F','G'],E),write("robot: "),write(E),nl.
@@ -89,6 +105,7 @@ dispMove(Move,computer):- nth1(1,Move,I),nth1(I,['A','B','C','D','E','F','G'],E)
  * Es satisfa si el jugador huma o l'ordinador aconsegueix alinear 4 peces horizontalment;verticalment;
  * o diagonalment en el tauler.  
  * **/
+
 game_over(Board,opponent,_):-checkHori(Board,'X',7);checkVert(Board,'X',6);checkdiagonals('X',Board),!.
 game_over(Board,computer,_):-checkHori(Board,'O',7);checkVert(Board,'O',6);checkdiagonals('O',Board),!.
 
@@ -194,30 +211,46 @@ move([X,Y|_],computer):-board(Board),
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%% ESCOLLIM EL SEGUENT JUGADOR  %%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%% ESCOLLIM EL SEGUENT JUGADOR  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+/**
+ * opponent/Computer -> Jugador Huma/ Ordinador
+ * Es satisfa si s'ha pogut escollir un jugador correctament.
+ * **/
+next_player(opponent,computer). % torn ordinador.
+next_player(computer,opponent). % torn jugador huma.
 
-next_player(opponent,computer). %computer turn
-next_player(computer,opponent). %player turn
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%% MAIN  %%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% MAIN %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-
+/**
+ * Result -> unificat l'stat final de tauler despres de finalitzar la partida
+ * Es satisfa si s'ha inicialitzat correctament la partida 
+ * **/
 init_game(Result):-initBoard,display_game,nl,nl,play(opponent),board(Result).
 
+/**
+ * Player -> Jugador
+ * Es satisfa si s'ha trobat un guanyador o empat.
+ * **/
+
+ %comprovem si ha hagut un guanyador amb el jugador anterior   
 play(Player):- board(Board),
-                next_player(Player,AntPlayer),
-                game_over(Board,AntPlayer,Result),!,
-                announceResult(AntPlayer),!.
+                next_player(Player,AntPlayer), % jugador anterior
+                game_over(Board,AntPlayer,Result),!, %comprovem si ha acabat la partida
+                announceResult(AntPlayer),!. % anunciem el resulat en cas de que hi hagi un guanyador
+% Es satisfa si hi ha un empat
 play(Player):-possibles_moves(Moves),!,length(Moves,Len),!,Len=0,write("TIE!"),!.
-play(Player) :-choose_move(Player,Move),
-                                move(Move,Player),
-                                display_game,nl,nl,
-                                next_player(Player,Player1),!,
-                                play(Player1).
+% Es satisfa en el cas que no hi ha un guanyador ni un empat, llavors la crida recursiva
+% per passar al seguent jugador.
+play(Player) :-choose_move(Player,Move), % escollim un moviment
+                                move(Move,Player), % fem el moviment
+                                display_game,nl,nl, % mostrem per pantalla l'estat del tauler
+                                next_player(Player,Player1),!, % passem el seguent jugador
+                                play(Player1). % crida recursiva.
                                 
 
 
@@ -226,62 +259,96 @@ play(Player) :-choose_move(Player,Move),
 %%%%%%%%     HELPER METHODS    %%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+/**
+ * L -> llista
+ * E -> Element a la qual volem trobar el seu index 
+ * Index -> Index de l'element E
+ * Es satisfa el predicat si trobem l'index de l'element E dintre de la 
+ * llista L
+ * **/
 indexOf([Element|_], Element, 0):- !.
 indexOf([_|Tail], Element, Index):-
   indexOf(Tail, Element, Index1),
   !,
   Index is Index1+1.
 
+/**
+ * Sublist -> Llista d'elements que volem trobar en la llista <List>
+ * List -> Llista d'elements
+ * Es satisfa el predicat si <Sublist> es subllista de la llista <Llista> amb el mateix ordre. 
+ * **/
 sublist(SubList, List) :-
     append(Prefix, _, List),
     append(_, SubList, Prefix).
+
 
 replace_nth(N,I,V,O) :-
     nth1(N,I,_,T),
     nth1(N,O,V,T).
 
+/**
+ * M -> Tauler
+ * Row -> Fila
+ * Col -> Columna
+ * Cell -> Element
+ * N -> Tauler final despres de fer la substitucio en la posicio (Fila,Columna) amb l'element
+ * Es satisfa si s'ha pogut remplaçar l'element de la posicio Row,Columna amb l'element <Element>
+ * **/
 replace_row_col(M,Row,Col,Cell,N) :-
     nth1(Row,M,Old),
     replace_nth(Col,Old,Cell,Upd),
     replace_nth(Row,M,Upd,N).
 
 
+/**
+ * Grid -> tauler
+ * J -> peça jugador
+ * N -> Mida columnes tauler 
+ * Es satisfa el predicat  si es detecta quatre elements J consequtius Horitzaontalment
+ * **/
 checkHori(Grid, J, N) :-
             maplist(nth1(N),Grid, Column),        
             sublist([J,J,J,J],Column),!.   
-
-
 checkHori(Grid, J, N) :-
                         N > 0,
                         N1 is N-1,
                         checkHori(Grid, J, N1),!.
 
-
+/**
+ * Grid -> tauler
+ * J -> peça jugador
+ * N -> Mida columnes tauler 
+ * Es satisfa el predicat  si es detecta quatre elements J consequtius Verticalment
+ * **/
 checkVert(Grid, J, N) :-
             nth1(N,Grid,L),          
             sublist([J,J,J,J], L),
             !.
-
-
 checkVert(Grid, J, N) :-
             N > 0,
             N1 is N-1,
             checkVert(Grid, J, N1),!.
 
 
-checkdiagonals(X,T):- append(_,[C1,C2,C3,C4|_],T), % check if 4 connected columns exists in board...
-       append(I1,[X|_],C1), %...such that all of them contain a piece of player X...
+/**
+ * T -> tauler
+ * X -> peça jugador
+ * Es satisfa el predicat  si es detecta quatre elements X consequtius diagonalment.
+ * **/
+checkdiagonals(X,T):- append(_,[C1,C2,C3,C4|_],T), 
+       append(I1,[X|_],C1),
        append(I2,[X|_],C2),
        append(I3,[X|_],C3),
        append(I4,[X|_],C4),
        length(I1,M1), length(I2,M2), length(I3,M3), length(I4,M4),
        M2 is M1-1, M3 is M2-1, M4 is M3-1,!.
 
-
-
-
-
-
+/**
+ * List -> Llista d'elements
+ * Index -> Countador
+ * E -> Element posicio buida
+ * Z -> Index posicio buida
+ * Es satisfa si es retorna la primera posicio buida dona una fila <List>
+ * **/
 findFirstEmpty([E|_],E,Index,Index):-!.
 findFirstEmpty([X|List],Ele,Index,Z):- K is Index+1 ,findFirstEmpty(List,Ele,K,N),Z=N,!.
