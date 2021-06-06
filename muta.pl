@@ -3194,7 +3194,7 @@ diferencia([X|XS], [Y|YS], N):- X == Y, diferencia(XS, YS, N), !.
 diferencia([X|XS], [Y|YS], N):- X \== Y, diferencia(XS, YS, Np), N is Np+1, !.
 
 
-muta(PI, PF):- string_chars(PI, CPI), string_chars(PF, CPF), diferencia(CPI, CPF, N), i_muta(PI, PF, [], N).
+muta(PI, PF):- string_chars(PI, CPI), string_chars(PF, CPF), diferencia(CPI, CPF, N), i_muta(PI, PF, [], N), !.
 
 % i_muta(PI, PF, LP, LastDif). Es compleix quan PI és la paraula inicial de la mutació, PF la paraula final de la 
 % mutació, LP és la llista de paraules per les que ja s’ha passat i LastDif és la última diferència entre PI i PF
@@ -3248,7 +3248,8 @@ fmuta(PI, PF):- string_chars(PI, CPI),
                 trobaUn(PI, PF, [], Dif, LFTmp), % Es troba la primera solució
                 length(LFTmp, MaxLlarg), % I es fa servir la llargada per la resta de possibles llistes
                 findall(LF, trobaMesCurt(PI, PF, [], Dif, MaxLlarg-1, LF), Llistes), 
-                mesCurta([LFTmp|Llistes], MC), write(MC).
+                mesCurta([LFTmp|Llistes], MC), 
+                write("Canvis: "), writeln(MC), write("Llargada: "), length(MC, X), writeln(X), !.
 
 % trobaUn(PI, PF, LP, LastDif, LF). Es compleix quan PI és la paraula inicial de la mutació, PF la paraula final de la 
 % mutació, LP és la llista de paraules per les que ja s’ha passat, LastDif és la última diferència entre PI i PF i LF és
