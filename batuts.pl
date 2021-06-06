@@ -1,3 +1,4 @@
+% ESTABLIMENTS
 establiment( % -> Promig 2.66666
     best_batuts, [alan,john,mary],
     [
@@ -39,7 +40,7 @@ establiment( % -> Promig 3.0
     ]
 ).
 
-establiment( % -> Promig 3.0
+establiment( % -> Promig 1.94
     batuts_barats, [pep,laia,rosana],
     [ 
         batut(fresc1, [peach, lemon, milk], 2),
@@ -50,119 +51,71 @@ establiment( % -> Promig 3.0
     ]
 ).
 
+establiment( % -> Promig 3.54
+    weird_batuts, [josep,alex,sergi,cristina],
+    [ 
+        batut(weird1, [peach, lemon, milk, cherry], 3),
+        batut(weird2, [cherry, watermelon, chocolate, yogurt], 2.7),
+        batut(weird3, [strawberry, orange, milk, peach], 2.5),
+        batut(weird4, [chocolate, milk, strawberry, apple], 3.6),
+        batut(weird5, [watermelon, pear, yogurt, peach, lemon, milk], 6.2),
+        batut(weird6, [orange, pear, peach, lemon, yogurt], 3.6),
+        batut(weird7, [cherry, orange, milk, strawberry, lemon], 3.2)
+    ]
+).
 
-%=============================================================
-%                       mesDe(N,E).
-%=============================================================
 
-/**
- * N -> Nombre de batuts
- * E -> Nom de l'establiment
- * Es satisfà si l’establiment E te més de N batuts.
- **/
+% mesDe(+N, E). Es satisfà si l’establiment E te més de N batuts
 mesDe(N,E):- establiment(E,_,L), length(L,Len), Len > N.
 
-%=============================================================
-%                        elFa(B,E).
-%=============================================================
 
-/**
- * B -> Nom del batut
- * E -> Nom de l'establiment
- * Es satisfa si l'establiment E fa el batut B
- **/
-
-elFa(B,E):- establiment(E,_,L), member(batut(B,_,_),L). % S'hauria de fer un tall a algun lloc perque sino al fer p.e. elFa(combo1, batuts_galore) dona true i despres false
+% elFa(B, E). Es satisfà si l’establiment E fa el batut B
+elFa(B,E):- establiment(E,_,L), member(batut(B,_,_),L).
 
 
-%=============================================================
-%                       ratio().
-%=============================================================
-
-/**
- * Es satisfa si l'establiment E te un ratio d'empleat per batut R
- **/
+% ratio(E, R). Es satisfà si l’establiment E te un ratio d’empleats per batuts d’R
 ratio(E,R):- establiment(E, Empleats, Batuts), length(Empleats, LEmp), length(Batuts, LBat), R is LEmp/LBat.
 
 
-%=============================================================
-%                        promig(E,N).
-%=============================================================
-
-/**
- * E -> Nom de l'establiment
- * P -> Preu promig dels batuts
- * Es satisfà si el preu promig dels batuts de E és P
- **/
+% suma(LL, M). Es satisfà quan M és la suma dels preus de la llista de batuts LL.
 suma([],0).
-suma([batut(_,_,L)|LS],M):- suma(LS, Z), M is Z + L.
+suma([batut(_,_,P)|LS], M):- suma(LS, Z), M is Z + P.
+
+% promig(E, P). Es satisfà si el promig del preu dels batuts a l’establiment E és P
 promig(E,P):- establiment(E,_,L), length(L,Len), suma(L,M), Z is M/Len, Z = P.
 
 
-%=============================================================
-%                        mesBarat(E)
-%=============================================================
-
-
-/**
- * E -> Nom de l'establiment
- * Es satisfa si l'establiment E te els batuts mes barats en promitge.
- **/
+% mesBarat(E). Es satisfà si l’establiment E te els batuts més barats en promig
 mesBarat(E):- establiment(E, _, _), promig(E, Pe), establiment(X, _, _), X \= E, promig(X, Px), Pe > Px, !, fail. % A la mínima que n'hi hagi un de mes barat fallar
-mesBarat(E). % Si provant tots els altres establiment no s'ha complert l'anterior, aquesta retornarà true, NO ES POT CANVIAR D'ORDRE
+mesBarat(E):- establiment(E, _, _). % Si provant tots els altres establiment no s'ha complert l'anterior, aquesta retornarà true, NO ES POT CANVIAR D'ORDRE
 
 
+% notInList(LX, D). Es satisfà quan algun dels elements de la llista LX està a la llista D
+notInList([],_).
+notInList([L|LX],D):- notInList(LX,D), not(member(L,D)). 
 
-%=============================================================
-%                        trobaBatut(L,D,I).
-%=============================================================
+% inList(LX, D). Es satisfà quan tots els elemnts de la llista LX estan a la llista D
+inList([],_).
+inList([L|LX],D):- inList(LX,D), member(L,D).
 
-/**
- * LX -> Llista la quaal volem comprovar si alguns dels seu elements pertanyen a la llista D.
- * D  -> Llista en la qual volem comprovar
- * Comprova si alguns dels ingredients de LX pertanyant a la llista D.
- **/
-memList([],D).
-memList([L|LX],D):-memList(LX,D),not(member(L,D)). 
-/**
- * LX -> Llista la qual volem comprovar si TOTS els seus elements pertanyen a la llista D.
- * D Llista en la qual volem fer la comprovacio
- * Comprova si tots els elements de LX pertanyent  a la llista D
- * **/
-allmemList([],D).
-allmemList([L|LX],D):-allmemList(LX,D),member(L,D).
-
-/**
- * E -> establiment
- * Lb -> Llista de batuts de l'establiment
- * D -> Ingredients que han d'estar a la llista d'ingredients del batut
- * I -> Ingredients que no han d'estat a la llista d'ingredients del batut
- * L -> Llista on guardem el resultat
- * Fa un recorregut de tots els batuts de l'establiment i comprovant si el batut compleix els requisits D i I.
- * **/
+% fillList(E, Lb, D, I, L). Es satisfà quan L és una llista formada per parelles (E, NomBatut) que contenen
+% els ingredients de la llista D i cap de la llista I. Lb és la llista de batuts de l'establiment E.
+% Fa un recorregut de tots els batuts de l'establiment i comprovant si el batut compleix els requisits D i I.
 fillList(_,[],_,_,[]).
-fillList(E,[batut(M,List,_)|Lb],D,I,[E,M|L]):-fillList(E,Lb,D,I,L),memList(List,I),allmemList(D,List),!.
-fillList(E,[batut(M,List,_)|Lb],D,I,L):-fillList(E,Lb,D,I,L).
+fillList(E,[batut(M,List,_)|Lb],D,I,[E,M|L]):- fillList(E,Lb,D,I,L), notInList(List,I), inList(D,List), !.
+fillList(E,[batut(_,_,_)|Lb],D,I,L):- fillList(E,Lb,D,I,L).
 
-/**
- * Establiments -> Llista amb noms d'establiments
- * L -> Llista de sortida
- * D -> Ingredients que han d'estar a la llista d'ingredients del batut
- * I -> Ingredients que no han d'estat a la llista d'ingredients del batut
- * Fa un recorregut de tots els establiments de la base de dades.
- * **/
+% recurse(Establiments,L,D,I). Es satisfà quan L és una llista formada per llistes de parells (Establiment, NomBatut)
+% de la llista d'establiments Establiments que contenen els ingredients que es demanan a la llista D
+% i cap dels que es demanen a la llista I
 recurse([],[],_,_).
-recurse([X|Establiments],[Z|L],D,I) :- recurse(Establiments,L,D,I),establiment(X,In,Lb),fillList(X,Lb,D,I,Z).
+recurse([X|Establiments],[Z|L],D,I):- recurse(Establiments,L,D,I), establiment(X,_,Lb), fillList(X,Lb,D,I,Z).
 
-/**
- * D -> Ingredients que han d'estar a la llista d'ingredients del batut
- * I -> Ingredients que no han d'estar a la llista d'ingredients del batut
- *  Es satisfa si L es una llista formada pels parells <Establiment NomBatuts> de tots els establiments-batuts que 
- *  Contenent els ingredients que es demanent a la llista D i cap dels que es diuen en la llista I.
- * **/
-trobaBatuts(L,D,I):-  
-                    findall(Establiment, establiment(Establiment,_,_), List), % troba tots els establiments dintre de la base de dades i en els guarda en List
-                    recurse(List,Z,D,I), %recorre tots els establiment , construin en els mateix temps una llista per cada establiment.
-                    flatten(Z,L). % converteix llista de llistes en una unica llista
+% trobaBatuts(L,D,I). Es satisfà si L és una llista formada pels parells (Establiment,NomBatut) 
+% de tots els establiments-batuts que contenen els ingredients que es demanen a la llista D 
+% i cap dels que es diuen a la llista I.
+trobaBatuts(L,D,I):- findall(Establiment, establiment(Establiment,_,_), List), % Troba tots els establiments dintre de la base de dades i en els guarda en List
+                     recurse(List,Z,D,I), % Recorre tots els establiment , construin en els mateix temps una llista per cada establiment.
+                     flatten(Z,L). % Converteix llista de llistes en una unica llista
 
 
