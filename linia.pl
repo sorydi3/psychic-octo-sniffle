@@ -345,3 +345,15 @@ checkdiagonals(X,T):- append(_,[C1,C2,C3,C4|_],T),
  * **/
 findFirstEmpty([E|_],E,Index,Index):-!.
 findFirstEmpty([X|List],Ele,Index,Z):- K is Index+1 ,findFirstEmpty(List,Ele,K,N),Z=N,!.
+
+
+at(Matrix, X, Y, V) :- nth0(X, Matrix, Row), nth0(Y, Row, V).
+
+split_at(N, List, [H|[T]]) :- append(H, T, List), length(H, N).
+
+board(B),findall(E,(between(1,4,Fila),between(1,4,Columna),at(B,Fila,Columna,E)),R).
+
+divide([],[],[]).
+divide(List, [Split|Splits], [Chunk|Rest]) :-
+    split_at(Split, List, [Chunk, Remainder]),
+    divide(Remainder, Splits, Rest).
