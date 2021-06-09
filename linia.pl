@@ -236,7 +236,7 @@ init_game(Result):-initBoard,display_game,nl,nl,play(opponent),board(Result).
                 game_over(Board,AntPlayer,_),!, %comprovem si ha acabat la partida
                 announceResult(AntPlayer),!. % anunciem el resulat en cas de que hi hagi un guanyador
 % Es satisfa si hi ha un empat
-play(Player):-possibles_moves(Moves),length(Moves,Len),Len=0,write("TIE!").
+play(_):-possibles_moves(Moves),length(Moves,Len),Len=0,write("TIE!").
 % Es satisfa en el cas que no hi ha un guanyador ni un empat, llavors la crida recursiva
 % per passar al seguent jugador.
 play(Player) :- choose_move(Player,Move), % escollim un moviment
